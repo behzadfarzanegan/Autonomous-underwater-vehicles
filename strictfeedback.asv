@@ -1,0 +1,325 @@
+
+clear all;
+clc;
+
+close all
+rng(1)
+ps1(1,1) = pi/2; %error
+ps1(1,2) = ps1(1,1);
+
+eta(1,1)=2;
+eta(1,2)=eta(1,1);
+
+eta(2,1)=1;
+eta(2,2)=eta(2,1);
+%%%%%%%%%%%%%%%%%%%%%%%%%
+eta_1d(1)=3;
+eta_2d(1)=2;
+psi_d(1)=pi/4;
+
+eta_1d(2)=3;
+eta_2d(2)=2;
+psi_d(2)=pi/4;
+%%%%%%%%%%%%%%%%%%%%%
+nue(:,1)=[0 0 0]';
+nue(:,2)=[0 0 0]';
+
+x(:,1) = [eta(1,1)-eta_1d(1),eta(2,1)-eta_2d(1),ps1(1,1) -psi_d(1)]'; %error
+x(:,2) = [eta(1,1)-eta_1d(1),eta(2,1)-eta_2d(1),ps1(1,1) -psi_d(1)]';
+xr(:,1) = [0,-0.5,0]';
+s(1,1)=1;
+v(1,1)=1;
+s1(1)=02;
+s2(1)=02;
+v(2,1)=0;
+
+Neuron_Num_a1=3;
+Neuron_Num_c1=4;
+Vc1=[rand(Neuron_Num_c1,2)];%no*1
+Wc1=rand(1,Neuron_Num_c1)*.01;
+ 
+Wc1(1,:)=Wc1;
+Wc1(2,:)=Wc1(1,:);
+Waa=0.01*rand(1,Neuron_Num_a1);
+Wa1(1,:)=Waa;
+Wa1(2,:)=Wa1(1,:);
+r1=10;q1=1;ro1=2.1;kappa1=1;a1=6;
+
+Neuron_Num_a2=3;
+Neuron_Num_c2=4;
+Vc2=[rand(Neuron_Num_c2,2)];%no*1
+Wcc=rand(1,Neuron_Num_c2)*.01;
+Wc2(1,:)=Wcc;
+Wc2(2,:)=Wc2(1,:);
+
+Wa2(1,:)=0.01*rand(1,Neuron_Num_a2);
+Wa2(2,:)=Wa2(1,:);
+r2=10;q2=1;ro2=2.2;kappa2=1;a2=1;
+
+
+Neuron_Num_a3=3;
+Neuron_Num_c3=4;
+Vc3=[rand(Neuron_Num_c3,2)];%no*1
+Wc3(1,:)=rand(1,Neuron_Num_c3)*.01;
+Wc3(2,:)=Wc3(1,:);
+Wa3(1,:)=0.01*rand(1,Neuron_Num_a3);
+Wa3(2,:)=Wa3(1,:);
+r3=1;q3=10;ro3=2.2;kappa3=1.7;a3=2;
+T=0.01;
+%load('WCVC.mat')
+%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%
+Neuron_Num_av=9;
+Neuron_Num_cv=21;
+Vcv=[rand(Neuron_Num_cv,2)];%no*1
+Wcv=rand(1,Neuron_Num_cv)*.01;
+Wcv(1,:)=Wcv;
+Wcv(2,:)=Wcv(1,:);
+
+Wav(:,:,1)=0.1*rand(2,Neuron_Num_av);
+Wav(:,:,2)=Wav(:,:,1);
+
+rv=1;qv=1;rov=0.4;kappav=0.1;av=2;
+%%%%%%%%%%%%%
+Neuron_Num_aw=20;
+Neuron_Num_cw=20;
+Vcw=[rand(Neuron_Num_cw,2)];%no*1
+Wcw=rand(1,Neuron_Num_cw)*.01;
+ load('WaVa3.mat')
+Vw=Va';%no*1
+Ww=[1];
+rw=.1;qw=.1;row=1.4;kappaw=0.1;aw=2;
+%%%%%%%%%%%%%%%%%%%%%%%
+mo=24.8;Io=0.9453;
+ro=0.0825;Lo=0.1635;
+Fs1=1;Fs2=1;
+%%%%%%%%%%%
+theta_r(1)=0;
+NF=1256;
+%%%%%%%%%%%%%%%%%%%%
+Wu1=[0	0	0	0.5];
+kappau1=0.2;
+Fisher=0;
+gamma=0.5;
+
+u3(1)= Wa3(1,:)*[x(3,1) x(3,1)^2 x(3,1)^3]'-1*x(3,1);
+u3(2)= u3(1);
+
+    u2(1)= Wa2(1,:)*[x(2,1) x(2,1)^2 x(2,1)^3]'-1*x(2,1);
+    u1(1)= Wa1(1,:)*[x(1,1) x(1,1)^2 x(1,1)^3]'-1*x(1,1);
+
+
+    u2(2)= u2(1);
+    u1(2)= u1(1);
+
+    tau(:,1)= Wav(:,:,1)*[nue(1,1) nue(1,1)^2 nue(1,1)^3 nue(2,1) nue(2,1)^2 nue(2,1)^3 nue(3,1) nue(3,1)^2 nue(3,1)^3]'-5*x(1,1);
+    tau(:,2)= tau(:,1);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+for k = 2:NF
+    ud=1;
+    vd=2;
+    eta_1d(k+1)= eta_1d(k) +T*(cos(psi_d(k))*1-sin(psi_d(k)*2));
+    eta_2d(k+1)= eta_2d(k) +T*(sin(psi_d(k))*1+cos(psi_d(k)*2));
+    psi_d(k+1)= psi_d(k) +T*(0);
+
+    J3(k) = Wc3(k,:)*[x(3,k)^2  x(3,k)^4 x(3,k)^6 x(3,k)^8]';
+
+
+    del_J3=Wc3(k,:)*[2*x(3,k)  4*x(3,k)^3 6*x(3,k)^5 8*x(3,k)^7]';
+    alpha3=-gamma/(2*r3)*del_J3;
+  
+    Yk_1 = q3*x(3,k-1)^2 +r3*u3(:,k-1)^2;
+    delta_x = gamma*[x(3,k)^2  x(3,k)^4 x(3,k)^6 x(3,k)^8]' - [x(3,k-1)^2  x(3,k-1)^4 x(3,k-1)^6 x(3,k-1)^8]';
+    EJK = Yk_1+Wc3(k,:)*delta_x;
+    
+    Wc3(k+1,:) =Wc3(k,:)-ro3*(delta_x'*EJK)/(delta_x'*delta_x+1);
+
+
+
+    u3(k)= Wa3(k,:)*[x(3,k) x(3,k)^2 x(3,k)^3]'-1*x(3,k);
+           u3(k)= -1*x(3,k);
+
+    alpha_tilde3= u3(k)-alpha3;
+    sigma3a=[x(3,k) x(3,k)^2 x(3,k)^3];
+    Sigma3a=sigma3a/(1+sigma3a*sigma3a');
+     Wa3(k+1,:)= Wa3(k,:)-kappa3*Sigma3a*alpha_tilde3;
+
+    x(3,k+1) = psi(1,k)-psi_d(k+1)+T*(u3(k)); %phi_e
+    psi(1,k+1)=psi(1,k)+T*(u3(k));
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%
+        J2(k) = Wc2(k,:)*[ x(2,k)^2  x(2,k)^4 x(2,k)^6 x(2,k)^8]';
+
+    del_J2=Wc2(k,:)*[2*x(2,k)  4*x(2,k)^3 6*x(2,k)^5 8*x(2,k)^7]';
+
+    alpha2=-gamma/(2*r2)*del_J2';
+  
+    Yk_2 = q2*x(2,k-1)^2 +r2*u2(:,k-1)^2;
+    delta_x2 = gamma*[x(2,k)^2  x(2,k)^4 x(2,k)^6 x(2,k)^8]' - [x(2,k-1)^2  x(2,k-1)^4 x(2,k-1)^6 x(2,k-1)^8]';
+    EJK2 = Yk_2+Wc2(k,:)*delta_x2;
+    
+    Wc2(k+1,:) =Wc2(k,:)-ro2*(delta_x2'*EJK2)/(delta_x2'*delta_x2 +1);
+
+
+
+     u2(k)= Wa2(k,:)*[x(2,k) x(2,k)^2 x(2,k)^3]'-5*x(2,k)+ (cos(psi(1,k))*ud+sin(psi(1,k))*vd)-u3(k)*x(1,k);
+       u2(k)=-5*x(2,k)+ (cos(psi(1,k))*ud+sin(psi(1,k))*vd)-u3(k)*x(1,k);
+
+    alpha_tilde2=  u2(k)-alpha2;
+    sigma2a=[x(2,k) x(2,k)^2 x(2,k)^3];
+    Sigma2a=sigma2a/(1+sigma2a*sigma2a');
+
+     Wa2(k+1,:)= Wa2(k,:)-kappa2*Sigma2a*alpha_tilde2;
+
+    x(2,k+1) = x(2,k) +T*(u2(k)+u3(k)*x(1,k)- (cos(psi(1,k))*ud+sin(psi(1,k))*vd) ); %y_e
+
+
+    eta(2,k+1)=x(2,k+1)+eta_2d(k+1);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    J1(k) = Wc1(k,:)*[ x(1,k)^2  x(1,k)^4 x(1,k)^6 x(1,k)^8]';
+
+    del_J1=Wc1(k,:)*[2*x(1,k)  4*x(1,k)^3 6*x(1,k)^5 8*x(1,k)^7]';
+
+    alpha1=-gamma/(2*r1)*del_J1';
+  
+    Yk_1 = q1*x(1,k-1)^2 +r1*u1(:,k-1)^2;
+    delta_x1 = gamma*[x(1,k)^2  x(1,k)^4 x(1,k)^6 x(1,k)^8]' - [x(1,k-1)^2  x(1,k-1)^4 x(1,k-1)^6 x(1,k-1)^8]';
+    EJK1 = Yk_1+Wc1(k,:)*delta_x1;
+    
+    Wc1(k+1,:) =Wc1(k,:)-ro1*(delta_x1'*EJK1)/(delta_x1'*delta_x1 +1);
+
+
+
+     u1(k)= Wa1(k,:)*[x(1,k) x(1,k)^2 x(1,k)^3]'-5*x(1,k)-(sin(psi(1,k))*ud-cos(psi(1,k))*vd)-u3(k)*x(2,k);
+      u1(k)=-5*x(1,k)-(sin(psi(1,k))*ud-cos(psi(1,k))*vd)-u3(k)*x(2,k);
+
+    alpha_tilde1=  u1(k)-alpha1;
+    sigma1a=[x(1,k) x(1,k)^2 x(1,k)^3];
+    Sigma1a=sigma1a/(1+sigma1a*sigma1a');
+
+     Wa1(k+1,:)= Wa1(k,:)-kappa1*Sigma1a*alpha_tilde1;
+
+    x(1,k+1) = x(1,k) +T*(u1(k)+u3(k)*x(2,k)+ (sin(psi(1,k))*ud-cos(psi(1,k))*vd) ); %y_e
+
+% 
+    eta(1,k+1)=x(1,k+1)+eta_1d(k+1);
+
+
+%     %%%%%%%%%%%%%%%%
+    Jv(k) = Wcv(k,:)*Critic_NL_gamma_bah(nue(:,k))';
+
+    del_Jv=Wcv(k,:)*Dsigdx_NL_gamma_bah(nue(:,k));
+    Gv=[1/32.33 0;0 0;0 66.9/553.55];
+    alphav=-gamma/(2*rv)*Gv'*del_Jv';
+  
+    Yk_v = qv*(nue(1,k-1)^2+nue(2,k-1)^2+nue(3,k-1)^2) +rv*(tau(1,k-1)^2+tau(2,k-1)^2);
+    delta_xv = gamma*Critic_NL_gamma_bah(nue(:,k))' -Critic_NL_gamma_bah(nue(:,k-1))';
+    EJKv = Yk_v+Wcv(k,:)*delta_xv;
+    
+    Wcv(k+1,:) =Wcv(k,:)-rov*(delta_xv'*EJKv)/(delta_xv'*delta_xv +1);
+
+fu=-1.62*nue(1,k)*abs(nue(1,k))+35.5*(nue(2,k)+0.0288*nue(3,k))*nue(3,k)-1.93*nue(3,k)^2;
+fv=-0.1310*(nue(2,k)+0.0288*nue(3,k))*abs((nue(2,k)+0.0288*nue(3,k))) -6.32*nue(3,k)*abs(nue(3,k)) +5.22*nue(1,k)*nue(3,k)-28.6*nue(1,k)*(nue(2,k)+0.0288*nue(3,k));
+ fr=-3.18*(nue(2,k)+0.0288*nue(3,k))*abs((nue(2,k)+0.0288*nue(3,k))) -94*nue(3,k)*abs(nue(3,k))  -2*nue(1,k)*nue(3,k)   -  24*nue(1,k)*(nue(2,k)+0.0288*nue(3,k));
+    %%%%%%%%%%%
+r_d(k+1)=Wa3(k+1,:)*[x(3,k+1) x(3,k+1)^2 x(3,k+1)^3]'-1*x(3,k+1);
+v_d(k+1)=Wa2(k+1,:)*[x(2,k+1) x(2,k+1)^2 x(2,k+1)^3]'-5*x(2,k+1)+ (cos(psi(1,k+1))*ud+sin(psi(1,k+1))*vd)-r_d(k+1)*x(1,k+1);
+u_d(k+1)=Wa1(k+1,:)*[x(1,k+1) x(1,k+1)^2 x(1,k+1)^3]'-5*x(1,k+1)-(sin(psi(1,k+1))*ud-cos(psi(1,k+1))*vd)-r_d(k+1)*x(2,k+1);
+
+    %%%%%%%%%%%%%%%%%%%%%
+     
+
+     sigma2av=[nue(1,k) nue(1,k)^2 nue(1,k)^3 nue(2,k) nue(2,k)^2 nue(2,k)^3 nue(3,k) nue(3,k)^2 nue(3,k)^3];
+%      tau(:,k)= Wav(:,:,k)*sigma2av'-5*x(2,k);
+
+      tau(:,k)= [-fu-10*(31.4+0.93)*nue(1,k)-100*nue(2,k)-10*nue(3,k);-fr-1.93/66.9*fv-20*nue(3,k)-100*nue(2,k)-20*nue(1,k)];
+
+
+    alpha_tildev= tau(:,k)-alphav;
+   
+    Sigma2av=sigma2av/(1+sigma2av*sigma2av');
+
+     Wav(:,:,k+1)= Wav(:,:,k)-kappa2*alpha_tildev*Sigma2av;
+
+
+
+     
+     
+     nue(1,k+1)=nue(1,k)-u1(k)+T*(fu+tau(1,k))/(31.4+0.93);
+      nue(2,k+1)=nue(2,k)-u2(k)+T*(fv)/(31.4+35.5);
+  
+     nue(3,k+1)=nue(3,k)-u3(k)+T*(66.9*fr+1.93*fv+66.9*tau(2,k))/(553.55);
+
+   
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+end
+
+figure(1);hold on;
+ plot(psi(1,3:NF),'LineWidth',2);
+% plot(x(3,1:NF),'LineWidth',2);
+ylabel('$x_e$, $y_e$ and  $\theta_e$','FontWeight','b','FontSize',12,'Interpreter','latex');
+xlabel('Time Instants','FontWeight','b','FontSize',12,'Interpreter','latex');
+% title('x1 and r1','FontWeight','b','FontSize',12);
+set( gca, 'FontWeight', 'b','FontSize', 12 );
+xlim([0 NF])
+legend('$x_e$','$y_e$', '$\theta_e$','Interpreter','latex')
+
+grid on
+set(gca,'GridLineStyle','--')
+ax=gca;
+ ax.XAxis.Exponent=3;
+
+ figure(2);hold on;
+plot(u3(1:NF),'LineWidth',2);
+ylabel('$x_e$, $y_e$ and  $\theta_e$','FontWeight','b','FontSize',12,'Interpreter','latex');
+xlabel('Time Instants','FontWeight','b','FontSize',12,'Interpreter','latex');
+% title('x1 and r1','FontWeight','b','FontSize',12);
+set( gca, 'FontWeight', 'b','FontSize', 12 );
+xlim([0 NF])
+legend('$x_e$','$y_e$', '$\theta_e$','Interpreter','latex')
+
+grid on
+set(gca,'GridLineStyle','--')
+ax=gca;
+ ax.XAxis.Exponent=3;
+
+ figure(3);hold on;
+% plot(psi(1,3:NF),'LineWidth',2);
+ plot(x(2,1:NF),'LineWidth',2);
+ylabel('$x_e$, $y_e$ and  $\theta_e$','FontWeight','b','FontSize',12,'Interpreter','latex');
+xlabel('Time Instants','FontWeight','b','FontSize',12,'Interpreter','latex');
+% title('x1 and r1','FontWeight','b','FontSize',12);
+set( gca, 'FontWeight', 'b','FontSize', 12 );
+xlim([0 NF])
+legend('$x_e$','$y_e$', '$\theta_e$','Interpreter','latex')
+
+ figure(4);hold on;
+% plot(psi(1,3:NF),'LineWidth',2);
+ plot(x(2,1:NF),'LineWidth',2);
+ylabel('$x_e$, $y_e$ and  $\theta_e$','FontWeight','b','FontSize',12,'Interpreter','latex');
+xlabel('Time Instants','FontWeight','b','FontSize',12,'Interpreter','latex');
+% title('x1 and r1','FontWeight','b','FontSize',12);
+set( gca, 'FontWeight', 'b','FontSize', 12 );
+xlim([0 NF])
+legend('$x_e$','$y_e$', '$\theta_e$','Interpreter','latex')
+
+ figure(5);hold on;
+% plot(psi(1,3:NF),'LineWidth',2);
+ plot(nue(1,1:NF),'LineWidth',2);
+ylabel('$x_e$, $y_e$ and  $\theta_e$','FontWeight','b','FontSize',12,'Interpreter','latex');
+xlabel('Time Instants','FontWeight','b','FontSize',12,'Interpreter','latex');
+% title('x1 and r1','FontWeight','b','FontSize',12);
+set( gca, 'FontWeight', 'b','FontSize', 12 );
+xlim([0 NF])
+legend('$x_e$','$y_e$', '$\theta_e$','Interpreter','latex')
+
+
+ figure(6);hold on;
+% plot(psi(1,3:NF),'LineWidth',2);
+ plot(nue(3,1:NF),'LineWidth',2);
+ylabel('$x_e$, $y_e$ and  $\theta_e$','FontWeight','b','FontSize',12,'Interpreter','latex');
+xlabel('Time Instants','FontWeight','b','FontSize',12,'Interpreter','latex');
+% title('x1 and r1','FontWeight','b','FontSize',12);
+set( gca, 'FontWeight', 'b','FontSize', 12 );
+xlim([0 NF])
+legend('$x_e$','$y_e$', '$\theta_e$','Interpreter','latex')
